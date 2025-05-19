@@ -3,7 +3,9 @@ from requests import Response
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 from typing import Generator, Tuple
-
+import re
+from base import DataBase
+import argparse
 
 class WebCrawler:
     def __init__(self, start_url: str, max_pages: int = 10):
@@ -14,7 +16,16 @@ class WebCrawler:
 
     def is_valid_url(self, url: str) -> bool:
         parsed = urlparse(url)
-        return bool(parsed.netloc) and parsed.netloc == self.domain and parsed.scheme in {'http', 'https'}
+        if not (bool(parsed.netloc) and parsed.netloc == self.domain
+                and parsed.scheme in {'http', 'https'}):
+            return False
+
+        path = parsed.path.lower()
+        invalid_extension_re = re.compile(r'^.*\.(?!html$)[a-z0-9]{2,4}(?=$|\?|#|/)')
+
+        if invalid_extension_re.match(path):
+            return False
+        return True
 
     def extract_links(self, response: Response) -> set:
         try:
@@ -63,9 +74,21 @@ class WebCrawler:
 
 
 if __name__ == "__main__":
-    crawler = WebCrawler(start_url="https://spbu.ru/", max_pages=5)
+    parser = argparse.ArgumentParser(description='Web crawler with database storage')
+    parser.add_argument('--db', type=str, default='base.db',
+                       help='Database filename (default: base.db)')
+    parser.add_argument('--start-url', type=str, default='https://spbu.ru/',
+                       help='Starting URL for crawling (default: https://spbu.ru/)')
+    parser.add_argument('--max-pages', type=int, default=50000,
+                       help='Maximum number of pages to crawl (default: 50000)')
+    args = parser.parse_args()
+
+    db = DataBase(args.db)
+    crawler = WebCrawler(start_url=args.start_url, max_pages=args.max_pages)
 
     for url, text in crawler.crawl():
         print(f"URL: {url}")
         print(f"Text data (first 100 chars): {text[:100]}...")
         print("-" * 80)
+        db.insert_page(url, text)
+    db.close()

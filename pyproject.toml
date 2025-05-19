@@ -1,0 +1,26 @@
+[project]
+name = "task3"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Dima"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests (==2.32.3)",
+    "beautifulsoup4 (==4.13.4)",
+    "certifi (==2025.4.26)",
+    "charset-normalizer (==3.4.2)",
+    "idna (==3.10)",
+    "pympler (==1.1)",
+    "pywin32 (==310)",
+    "soupsieve (==2.7)",
+    "typing-extensions (==4.13.2)",
+    "urllib3 (==2.4.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

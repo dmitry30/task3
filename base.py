@@ -21,3 +21,14 @@ class DataBase():
             cursor.close()
         except sqlite3.IntegrityError:
             pass
+
+    def get_urls_by_ids(self, ids):
+        try:
+            cursor = self.conn.cursor()
+            placeholders = ','.join('?' for _ in ids)
+            cursor.execute(f'SELECT url FROM pages WHERE id IN ({placeholders})', ids)
+            urls = cursor.fetchall()
+            cursor.close()
+            return urls
+        except sqlite3.IntegrityError:
+            pass
