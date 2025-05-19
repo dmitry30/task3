@@ -35,6 +35,6 @@ if __name__ == '__main__':
     if len(res) == 0:
         print("No results")
     else:
-        print(db.get_urls_by_ids(res))
+        print('\n'.join([_[0] for _ in db.get_urls_by_ids(res)]))
         print(len(res), "results")
     db.close()
