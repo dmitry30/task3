@@ -44,7 +44,7 @@ class InvertedIndex:
         Returns:
             Список токенов (слов).
         """
-        return re.findall(r'[-+]?\d*\.?\d+|\b[\w+]+\b', text)
+        return re.findall(r'[-+]?\d*\.?\d+|\b[\w+]+\b', text.lower())
 
     def compress_index(self) -> None:
         """Сжимает индекс используя гамма-кодирование."""
