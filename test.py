@@ -20,13 +20,13 @@ class TestInvertedIndex(unittest.TestCase):
             index.add_document(doc_id, text)
 
         self.assertEqual(len(index.doc_ids), 4)
-        self.assertIn("ректор", index.index)
-        self.assertEqual(len(index.index["спбгу"]), 3)
+        self.assertIn("СПбГУ", index.index.keys())
+        self.assertEqual(len(index.index["СПбГУ"]), 3)
 
     def test_tokenize(self):
         index = InvertedIndex()
         tokens = index._tokenize("Ректор СПбГУ объявил о новых правилах")
-        expected = ["ректор", "спбгу", "объявил", "о", "новых", "правилах"]
+        expected = ["Ректор", "СПбГУ", "объявил", "о", "новых", "правилах"]
         self.assertEqual(tokens, expected)
 
     def test_search_without_compression(self):
@@ -34,7 +34,7 @@ class TestInvertedIndex(unittest.TestCase):
         for doc_id, text in self.test_docs:
             index.add_document(doc_id, text)
 
-        results = index.search("ректор спбгу")
+        results = index.search("Ректор СПбГУ")
         self.assertEqual(len(results), 2)
         self.assertIn("doc1", results)
         self.assertIn("doc4", results)
@@ -45,7 +45,7 @@ class TestInvertedIndex(unittest.TestCase):
             index.add_document(doc_id, text)
         index.compress_index()
 
-        results = index.search("ректор спбгу")
+        results = index.search("Ректор СПбГУ")
         self.assertEqual(len(results), 2)
         self.assertIn("doc1", results)
         self.assertIn("doc4", results)
@@ -55,7 +55,7 @@ class TestInvertedIndex(unittest.TestCase):
         test_numbers = [1, 2, 3, 4, 5, 10, 100]
         for num in test_numbers:
             encoded = index._gamma_encode(num)
-            decoded = index._gamma_decode(encoded)
+            decoded = next(index._gamma_decode(encoded))
             self.assertEqual(num, decoded)
 
     def test_compression_ratio(self):
@@ -98,7 +98,7 @@ class TestInvertedIndex(unittest.TestCase):
                 new_index.load_from_file(tmp.name)
 
                 self.assertEqual(len(new_index.doc_ids), 4)
-                results = new_index.search("спбгу")
+                results = new_index.search("СПбГУ")
                 self.assertEqual(len(results), 3)
             finally:
                 os.unlink(tmp.name)
@@ -167,12 +167,12 @@ class TestIndexer(unittest.TestCase):
             # Индекс без сжатия
             indexer_uncompressed = Indexer(use_compression=False)
             indexer_uncompressed.process(get_docs())
-            uncompressed_size = indexer_uncompressed.get_index_size()[0]
+            uncompressed_size = indexer_uncompressed.get_index_size()
 
             # Индекс со сжатием
             indexer_compressed = Indexer(use_compression=True)
             indexer_compressed.process(get_docs())
-            compressed_size = indexer_compressed.get_index_size()[1]
+            compressed_size = indexer_compressed.get_index_size()
 
             # Проверяем что сжатый индекс значительно меньше
             self.assertLess(compressed_size, uncompressed_size)
