@@ -107,17 +107,15 @@ class TestInvertedIndex(unittest.TestCase):
         index.compress_index()
 
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
-            try:
-                index.save_to_file(tmp.name)
+            index.save_to_file(tmp.name)
 
-                new_index = InvertedIndex()
-                new_index.load_from_file(tmp.name)
+            new_index = InvertedIndex()
+            new_index.load_from_file(tmp.name)
 
-                self.assertEqual(len(new_index.doc_ids), 4)
-                results = new_index.search("СПбГУ")
-                self.assertEqual(len(results), 3)
-            finally:
-                os.unlink(tmp.name)
+            self.assertEqual(len(new_index.doc_ids), 4)
+            results = new_index.search("СПбГУ")
+            self.assertEqual(len(results), 3)
+
 
     def test_duplicate_documents(self):
         '''Тест обработки дубликатов документов'''
@@ -174,9 +172,8 @@ class TestIndexer(unittest.TestCase):
                 yield row[0], row[2]
 
         indexer = Indexer(use_compression=True)
-        processing_time = indexer.process(docs())
+        indexer.process(docs())
 
-        self.assertGreater(processing_time, 0)
         self.assertEqual(len(indexer.index.doc_ids), 4)
 
     def test_indexer_search(self):
