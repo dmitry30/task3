@@ -3,7 +3,7 @@ import os
 import tempfile
 from indexer import InvertedIndex, Indexer
 from base import DataBase
-
+import timeit
 
 class TestInvertedIndex(unittest.TestCase):
     def setUp(self):
@@ -15,6 +15,7 @@ class TestInvertedIndex(unittest.TestCase):
         ]
 
     def test_add_document(self):
+        '''Тест на добавление нового документа'''
         index = InvertedIndex(use_compression=False)
         for doc_id, text in self.test_docs:
             index.add_document(doc_id, text)
@@ -23,13 +24,22 @@ class TestInvertedIndex(unittest.TestCase):
         self.assertIn("СПбГУ", index.index.keys())
         self.assertEqual(len(index.index["СПбГУ"]), 3)
 
+    def test_empty_search(self):
+        '''Тест пустого поискового запроса'''
+        index = InvertedIndex()
+        index.add_document("doc1", "Содержимое документа")
+        results = index.search("")
+        self.assertEqual(len(results), 0)
+
     def test_tokenize(self):
+        '''Тест на токенизацию текста'''
         index = InvertedIndex()
         tokens = index._tokenize("Ректор СПбГУ объявил о новых правилах")
         expected = ["Ректор", "СПбГУ", "объявил", "о", "новых", "правилах"]
         self.assertEqual(tokens, expected)
 
     def test_search_without_compression(self):
+        '''Тест на поиск текста без сжатия'''
         index = InvertedIndex(use_compression=False)
         for doc_id, text in self.test_docs:
             index.add_document(doc_id, text)
@@ -40,6 +50,7 @@ class TestInvertedIndex(unittest.TestCase):
         self.assertIn("doc4", results)
 
     def test_search_with_compression(self):
+        '''Тест на поиск текста со сжатием'''
         index = InvertedIndex(use_compression=True)
         for doc_id, text in self.test_docs:
             index.add_document(doc_id, text)
@@ -51,6 +62,7 @@ class TestInvertedIndex(unittest.TestCase):
         self.assertIn("doc4", results)
 
     def test_gamma_encoding(self):
+        '''Тест на корректное кодирование - декодирование'''
         index = InvertedIndex()
         test_numbers = [1, 2, 3, 4, 5, 10, 100]
         for num in test_numbers:
@@ -59,6 +71,7 @@ class TestInvertedIndex(unittest.TestCase):
             self.assertEqual(num, decoded)
 
     def test_compression_ratio(self):
+        '''Тест на размер сжатия'''
         large_docs = []
         for i in range(1000):
             large_docs.append((f"doc{i}", f"Документ номер {i} содержит тестовые данные о ректоре университета"))
@@ -85,6 +98,7 @@ class TestInvertedIndex(unittest.TestCase):
         self.assertLess(size_compressed, size_uncompressed)
 
     def test_save_load_index(self):
+        '''Тест на сохранение и загрузку индекса'''
         index = InvertedIndex(use_compression=True)
         for doc_id, text in self.test_docs:
             index.add_document(doc_id, text)
@@ -103,6 +117,41 @@ class TestInvertedIndex(unittest.TestCase):
             finally:
                 os.unlink(tmp.name)
 
+    def test_duplicate_documents(self):
+        '''Тест обработки дубликатов документов'''
+        index = InvertedIndex()
+        index.add_document("doc1", "Тестовый документ")
+        index.add_document("doc1", "Тестовый документ")
+        self.assertEqual(len(index.doc_ids), 1)
+        self.assertEqual(len(index.index["Тестовый"]), 1)
+
+    def test_search_with_stop_words(self):
+        '''Тест поиска со стоп-словами'''
+        indexer = Indexer()
+        indexer.process([
+            ("doc1", "Это тестовый документ"),
+            ("doc2", "Другой документ")
+        ])
+
+        results = indexer.search("Это документ")
+        self.assertEqual(len(results), 1)
+        self.assertIn("doc1", results)
+
+    def test_special_characters(self):
+        '''Тест обработки специальных символов'''
+        index = InvertedIndex()
+        index.add_document("doc1", "Email: test@example.com, Phone: +1 (234) 567-89-00")
+        tokens = index._tokenize("Email: test@example.com, Phone: +1 (234) 567-89-00")
+        self.assertIn("test@example.com", tokens)
+        self.assertIn("+1", tokens)
+        self.assertIn("567-89-00", tokens)
+
+    def test_case_sensitivity(self):
+        '''Тест на чувствительность к регистру'''
+        index = InvertedIndex()
+        index.add_document("doc1", "Тест тест ТЕСТ")
+        self.assertEqual(len(index.index), 1)
+        self.assertIn("тест", index.index)
 
 class TestIndexer(unittest.TestCase):
     def setUp(self):
@@ -122,6 +171,7 @@ class TestIndexer(unittest.TestCase):
             os.unlink(self.test_db_path)
 
     def test_indexer_process(self):
+        '''Тест индексера на чтение из базы данных'''
         def docs():
             cursor = self.db.conn.cursor()
             cursor.execute('''SELECT * FROM pages''')
@@ -135,6 +185,7 @@ class TestIndexer(unittest.TestCase):
         self.assertEqual(len(indexer.index.doc_ids), 4)
 
     def test_indexer_search(self):
+        '''Тест индексера на поиск'''
         indexer = Indexer(use_compression=True)
         for doc_id, text in [
             ("doc1", "Ректор СПбГУ объявил о новых правилах"),
@@ -151,6 +202,7 @@ class TestIndexer(unittest.TestCase):
         self.assertIn("doc4", results)
 
     def test_index_size_comparison(self):
+        '''Тест индексера на сжатие'''
         large_db_path = tempfile.mktemp()
         large_db = DataBase(large_db_path)
         try:
@@ -184,6 +236,26 @@ class TestIndexer(unittest.TestCase):
             if os.path.exists(large_db_path):
                 os.unlink(large_db_path)
 
+class PerformanceTests(unittest.TestCase):
+    def test_indexing_performance(self):
+        """Тест производительности индексации"""
+        docs = [(f"doc{i}", "СПбГУ " * 100) for i in range(1000)]
+
+        def test_uncompressed():
+            indexer = Indexer(use_compression=False)
+            indexer.process(docs)
+
+        def test_compressed():
+            indexer = Indexer(use_compression=True)
+            indexer.process(docs)
+
+        uncompressed_time = timeit.timeit(test_uncompressed, number=1)
+        compressed_time = timeit.timeit(test_compressed, number=1)
+
+        print(f"\nUncompressed indexing time: {uncompressed_time:.2f}s")
+        print(f"Compressed indexing time: {compressed_time:.2f}s")
+
+        self.assertLess(compressed_time, uncompressed_time * 1.5)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
