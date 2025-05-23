@@ -2,7 +2,8 @@ from base import DataBase
 from indexer import Indexer
 import argparse
 
-if __name__ == '__main__':
+
+def main() -> None:
     parser = argparse.ArgumentParser(description='Поисковый индексер для базы данных страниц')
     parser.add_argument('--db', type=str, default='base.db',
                        help='Имя файла базы данных (по умолчанию: base.db)')
@@ -38,3 +39,6 @@ if __name__ == '__main__':
         print('\n'.join([_[0] for _ in db.get_urls_by_ids(res)]))
         print(len(res), "results")
     db.close()
+
+if __name__ == '__main__':
+    main()

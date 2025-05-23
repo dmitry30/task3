@@ -111,8 +111,7 @@ class WebCrawler:
             except requests.RequestException:
                 continue
 
-
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(description='Web crawler with database storage')
     parser.add_argument('--db', type=str, default='base.db',
                         help='Имя файла базы данных(по умолчанию: base.db)')
@@ -131,3 +130,6 @@ if __name__ == "__main__":
         print("-" * 80)
         db.insert_page(url, text)
     db.close()
+
+if __name__ == "__main__":
+    main()
