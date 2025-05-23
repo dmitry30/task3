@@ -1,26 +1,19 @@
-[project]
-name = "task3"
+[tool.poetry]
+name = "inverted-index"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Dima"}
-]
+description = "makes inverted index(compression included)"
+authors = ["dmitry30"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "requests (==2.32.3)",
-    "beautifulsoup4 (==4.13.4)",
-    "certifi (==2025.4.26)",
-    "charset-normalizer (==3.4.2)",
-    "idna (==3.10)",
-    "pympler (==1.1)",
-    "pywin32 (==310)",
-    "soupsieve (==2.7)",
-    "typing-extensions (==4.13.2)",
-    "urllib3 (==2.4.0)"
-]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+beautifulsoup4 = "^4.13.4"
+pympler = "^1.1"
+requests = "^2.32.3"
 
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]

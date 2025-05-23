@@ -2,7 +2,7 @@ import requests
 from requests import Response
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
-from typing import Generator, Tuple, Set, Optional, Pattern
+from typing import Generator, Tuple, List, Set, Optional, Pattern
 from base import DataBase
 import argparse
 import re
@@ -115,11 +115,11 @@ class WebCrawler:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Web crawler with database storage')
     parser.add_argument('--db', type=str, default='base.db',
-                        help='Database filename (default: base.db)')
+                        help='Имя файла базы данных(по умолчанию: base.db)')
     parser.add_argument('--start-url', type=str, default='https://spbu.ru/',
-                        help='Starting URL for crawling (default: https://spbu.ru/)')
+                        help='Начальная страница для прохода (по умолчанию: https://spbu.ru/)')
     parser.add_argument('--max-pages', type=int, default=50000,
-                        help='Maximum number of pages to crawl (default: 50000)')
+                        help='Максимальное количество страниц для прохода (по умолчанию: 50000)')
     args: argparse.Namespace = parser.parse_args()
 
     db: DataBase = DataBase(args.db)

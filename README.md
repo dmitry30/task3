@@ -1,10 +1,16 @@
 ## Работа с инвертированным индексом 
 Основной файл main.py
 
-Поисковый индексер для базы данных страниц<br>
---db Имя файла базы данных (по умолчанию: base.db)<br>
---compression Использовать сжатие индекса (по умолчанию: True)<br>
---search Поисковый запрос (по умолчанию: "Ректор СПбГУ")
+```bash
+usage: main.py [-h] [--db DB] [--compression COMPRESSION] [--search SEARCH]
+Поисковый индексер для базы данных страниц
+options:
+  -h, --help            show this help message and exit
+  --db DB               Имя файла базы данных (по умолчанию: base.db)
+  --compression COMPRESSION
+                        Использовать сжатие индекса (по умолчанию: True)
+  --search SEARCH       Поисковый запрос (по умолчанию: "Ректор СПбГУ")
+```
 
 В результате вернет ссылки в которых есть поисковый запрос
 
@@ -12,9 +18,20 @@
 В базе данных таблица pages(id int, url text, data text)
 
 Если базы нет ее можно создать при помощи parser.py <br>
---db Database filename (default: base.db) <br>
---start-url Starting URL for crawling (default: https://spbu.ru/) <br>
---max-pages Maximum number of pages to crawl (default: 50000)
+
+```bash
+usage: parser.py [-h] [--db DB] [--start-url START_URL] [--max-pages MAX_PAGES]
+
+Web crawler with database storage
+
+options:
+  -h, --help            show this help message and exit
+  --db DB               Имя файла базы данных(по умолчанию: base.db)
+  --start-url START_URL
+                        Начальная страница для прохода (по умолчанию: https://spbu.ru/)
+  --max-pages MAX_PAGES
+                        Максимальное количество страниц для прохода (по умолчанию: 50000)
+```
 
 
 Результаты проверки для сайта spbu для 40000 страниц

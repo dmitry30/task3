@@ -26,9 +26,6 @@ class DataBase:
         Args:
             url: URL страницы (уникальный ключ).
             data: Данные страницы.
-
-        Raises:
-            sqlite3.IntegrityError: Если URL уже существует в базе.
         """
         try:
             cursor: sqlite3.Cursor = self.conn.cursor()
